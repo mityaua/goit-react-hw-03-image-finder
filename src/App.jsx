@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import Searchbar from './components/Searchbar';
 import ImageGallery from './components/ImageGallery';
 import Button from './components/Button';
+import Loader from './components/Loader';
 
 import api from './api/api-services';
 
@@ -10,6 +11,8 @@ class App extends Component {
     images: [],
     currentPage: 1,
     searchQuery: '',
+    isLoading: false,
+    error: null,
   };
 
   // Если при обновлении запрос не равен между стейтами, тогда делаем фетч
@@ -25,12 +28,17 @@ class App extends Component {
       images: [],
       searchQuery: query,
       currentPage: 1,
+      error: null,
     });
   };
 
   // Получаем дату из фетча
   fetchAllImages = async () => {
     const { currentPage, searchQuery } = this.state;
+
+    this.setState({
+      isLoading: true,
+    });
 
     try {
       const { hits } = await api.fetchImages(searchQuery, currentPage);
@@ -40,18 +48,29 @@ class App extends Component {
         currentPage: prevState.currentPage + 1,
       }));
     } catch (error) {
-      return console.log(error);
+      this.setState({ error });
+    } finally {
+      this.setState({
+        isLoading: false,
+      });
     }
   };
 
   render() {
-    const { images } = this.state;
+    const { images, isLoading, error } = this.state;
 
+    // Заменить ошибку на компонент
     return (
       <>
         <Searchbar onSubmit={this.onChangeQuery} />
+
+        {isLoading && <Loader />}
+
+        {error && <h1>Error!</h1>}
+
         <ImageGallery images={images} />
-        <Button onClick={this.fetchAllImages} />
+
+        {images.length > 0 && <Button onClick={this.fetchAllImages} />}
       </>
     );
   }
