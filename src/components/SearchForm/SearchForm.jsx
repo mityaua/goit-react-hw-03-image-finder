@@ -4,11 +4,11 @@ import styles from './SearchForm.module.scss';
 
 class SearchFrom extends Component {
   state = {
-    search: '',
+    query: '',
   };
 
   handleSearchInput = e => {
-    const { name, value } = e.target;
+    const { name, value } = e.currentTarget;
 
     this.setState({
       [name]: value,
@@ -18,10 +18,19 @@ class SearchFrom extends Component {
   handleSubmit = e => {
     e.preventDefault();
 
-    if (!this.state.search) return;
+    // Запрещает отправку пустого инпута
+    if (!this.state.query) return;
 
-    console.log(this.state.search);
+    // Отдать данные внешнему компоненту
+    this.props.onSubmit(this.state.query);
+
+    this.resetForm();
   };
+
+  resetForm = () =>
+    this.setState({
+      query: '',
+    });
 
   render() {
     return (
@@ -33,8 +42,8 @@ class SearchFrom extends Component {
         <input
           className={styles['SearchForm-input']}
           type="text"
-          name="search"
-          value={this.search}
+          name="query"
+          value={this.state.query}
           onChange={this.handleSearchInput}
           autoComplete="off"
           autoFocus
