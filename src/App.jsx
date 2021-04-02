@@ -3,6 +3,8 @@ import Searchbar from './components/Searchbar';
 import ImageGallery from './components/ImageGallery';
 import Button from './components/Button';
 import Loader from './components/Loader';
+import ErrorMessage from './components/ErrorMessage';
+import Modal from './components/Modal';
 
 import api from './api/api-services';
 
@@ -12,6 +14,8 @@ class App extends Component {
     currentPage: 1,
     searchQuery: '',
     isLoading: false,
+    showModal: false,
+    largeImage: '',
     error: null,
   };
 
@@ -28,6 +32,8 @@ class App extends Component {
       images: [],
       searchQuery: query,
       currentPage: 1,
+      isLoading: false,
+      showModal: false,
       error: null,
     });
   };
@@ -56,21 +62,44 @@ class App extends Component {
     }
   };
 
-  render() {
-    const { images, isLoading, error } = this.state;
+  toggleModal = () => {
+    this.setState(state => ({
+      showModal: !state.showModal,
+    }));
+  };
 
-    // Заменить ошибку на компонент
+  // Доработать открытие модалки
+  handleImageItem = fullImageUrl => {
+    console.log(fullImageUrl);
+
+    this.setState({
+      largeImage: fullImageUrl,
+    });
+
+    this.toggleModal();
+  };
+
+  render() {
+    const { images, isLoading, showModal, fullImageUrl, error } = this.state;
+    const needToShowLoadMore = images.length > 0 && images.length >= 12; // Нужны доп проверки
+
     return (
       <>
         <Searchbar onSubmit={this.onChangeQuery} />
 
         {isLoading && <Loader />}
 
-        {error && <h1>Error!</h1>}
+        {error && <ErrorMessage />}
 
-        <ImageGallery images={images} />
+        <ImageGallery images={images} onClick={this.handleImageItem} />
 
-        {images.length > 0 && <Button onClick={this.fetchAllImages} />}
+        {needToShowLoadMore && <Button onClick={this.fetchAllImages} />}
+
+        {showModal && (
+          <Modal onClose={this.toggleModal}>
+            <img src={fullImageUrl} alt="" />
+          </Modal>
+        )}
       </>
     );
   }
