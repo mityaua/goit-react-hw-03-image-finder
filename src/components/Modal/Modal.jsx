@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { createPortal } from 'react-dom';
+import PropTypes from 'prop-types';
 
 import styles from './Modal.module.scss';
 
@@ -17,14 +18,12 @@ class Modal extends Component {
   handleKeyDown = event => {
     if (event.code === 'Escape') {
       this.props.onClose();
-      console.log('close modal on Escape');
     }
   };
 
   handleBackdropClick = event => {
     if (event.currentTarget === event.target) {
       this.props.onClose();
-      console.log('close modal on backdrop');
     }
   };
 
@@ -37,5 +36,9 @@ class Modal extends Component {
     );
   }
 }
+
+Modal.propTypes = {
+  onClose: PropTypes.func.isRequired,
+};
 
 export default Modal;

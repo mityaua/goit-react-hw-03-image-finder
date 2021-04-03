@@ -11,4 +11,4 @@ const fetchImages = async (query, currentPage) => {
   return data;
 };
 
-export default { fetchImages };
+export default fetchImages;

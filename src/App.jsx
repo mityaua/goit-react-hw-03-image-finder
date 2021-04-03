@@ -3,10 +3,10 @@ import Searchbar from './components/Searchbar';
 import ImageGallery from './components/ImageGallery';
 import Button from './components/Button';
 import Loader from './components/Loader';
-import ErrorMessage from './components/ErrorMessage';
+import Message from './components/Message';
 import Modal from './components/Modal';
 
-import api from './api/api-services';
+import fetchImages from './api/api-services';
 
 class App extends Component {
   state = {
@@ -22,7 +22,7 @@ class App extends Component {
   // Если при обновлении запрос не равен между стейтами, тогда делаем фетч
   componentDidUpdate(prevProps, prevState) {
     if (prevState.searchQuery !== this.state.searchQuery) {
-      this.fetchAllImages();
+      this.getImages();
     }
   }
 
@@ -40,7 +40,7 @@ class App extends Component {
   };
 
   // Получаем дату из фетча
-  fetchAllImages = async () => {
+  getImages = async () => {
     const { currentPage, searchQuery } = this.state;
 
     this.setState({
@@ -48,7 +48,7 @@ class App extends Component {
     });
 
     try {
-      const { hits } = await api.fetchImages(searchQuery, currentPage);
+      const { hits } = await fetchImages(searchQuery, currentPage);
 
       this.setState(prevState => ({
         images: [...prevState.images, ...hits],
@@ -68,11 +68,11 @@ class App extends Component {
     }
   };
 
-  // Получает полное изображение и открывает модалку
+  // Получает полное изображение, пишет его в стейт и открывает модалку
   handleGalleryItem = fullImageUrl => {
     this.setState({
-      showModal: true,
       largeImage: fullImageUrl,
+      showModal: true,
     });
   };
 
@@ -89,6 +89,13 @@ class App extends Component {
       top: document.documentElement.scrollHeight,
       behavior: 'smooth',
     });
+
+    // const { scrollTop, clientHeight } = document.documentElement;
+
+    // window.scrollTo({
+    //   top: scrollTop + clientHeight,
+    //   behavior: 'smooth',
+    // });
   };
 
   render() {
@@ -97,20 +104,42 @@ class App extends Component {
 
     return (
       <>
-        <Searchbar onSubmit={this.onChangeQuery} />
+        <Searchbar onSearch={this.onChangeQuery} />
 
-        {isLoading && <Loader />}
-
-        {error && <ErrorMessage />}
+        {images.length < 1 && (
+          <Message>
+            <h2>The gallery is empty 🙁</h2>
+            <p>Use search field!</p>
+          </Message>
+        )}
 
         <ImageGallery images={images} onImageClick={this.handleGalleryItem} />
 
-        {needToShowLoadMore && <Button onClick={this.fetchAllImages} />}
+        {needToShowLoadMore && <Button onClick={this.getImages} />}
 
         {showModal && (
           <Modal onClose={this.toggleModal}>
-            <img src={largeImage} alt="" />
+            <button type="button" onClick={this.toggleModal}>
+              Close
+            </button>
+            <img
+              src={largeImage}
+              alt=""
+              style={{ maxHeight: '100vh', maxWidth: '100vw' }}
+            />
           </Modal>
+        )}
+
+        {isLoading && <Loader />}
+
+        {error && (
+          <Message>
+            <h2>Oops! 😫</h2>
+            <p>
+              Sorry, something went wrong. Please try again, or{' '}
+              <a href="/">refresh the page</a>.
+            </p>
+          </Message>
         )}
       </>
     );

@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 
 import styles from './SearchForm.module.scss';
 
@@ -22,7 +23,7 @@ class SearchFrom extends Component {
     if (!this.state.query) return;
 
     // Отдать данные внешнему компоненту
-    this.props.onSubmit(this.state.query);
+    this.props.onSearch(this.state.query);
 
     this.resetForm();
   };
@@ -53,5 +54,9 @@ class SearchFrom extends Component {
     );
   }
 }
+
+SearchFrom.propTypes = {
+  onSearch: PropTypes.func.isRequired,
+};
 
 export default SearchFrom;
