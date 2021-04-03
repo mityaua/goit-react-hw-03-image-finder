@@ -30,10 +30,11 @@ class App extends Component {
   onChangeQuery = query => {
     this.setState({
       images: [],
-      searchQuery: query,
       currentPage: 1,
+      searchQuery: query,
       isLoading: false,
       showModal: false,
+      largeImage: '',
       error: null,
     });
   };
@@ -53,8 +54,12 @@ class App extends Component {
         images: [...prevState.images, ...hits],
         currentPage: prevState.currentPage + 1,
       }));
+
+      if (currentPage !== 1) {
+        this.scrollOnLoadButton();
+      }
     } catch (error) {
-      console.log(error);
+      console.log('Smth wrong with App fetch', error);
       this.setState({ error });
     } finally {
       this.setState({
@@ -63,26 +68,32 @@ class App extends Component {
     }
   };
 
+  // Получает полное изображение и открывает модалку
+  handleGalleryItem = fullImageUrl => {
+    this.setState({
+      showModal: true,
+      largeImage: fullImageUrl,
+    });
+  };
+
+  // Переключение модалки
   toggleModal = () => {
     this.setState(state => ({
       showModal: !state.showModal,
     }));
   };
 
-  // Доработать открытие модалки
-  handleImageItem = fullImageUrl => {
-    console.log(fullImageUrl);
-
-    this.setState({
-      largeImage: fullImageUrl,
+  // Скролл при клике на кнопку
+  scrollOnLoadButton = () => {
+    window.scrollTo({
+      top: document.documentElement.scrollHeight,
+      behavior: 'smooth',
     });
-
-    this.toggleModal();
   };
 
   render() {
-    const { images, isLoading, showModal, fullImageUrl, error } = this.state;
-    const needToShowLoadMore = images.length > 0 && images.length >= 12; // Нужны доп проверки
+    const { images, isLoading, showModal, largeImage, error } = this.state;
+    const needToShowLoadMore = images.length > 0 && images.length >= 12; // Нужны доп проверки;
 
     return (
       <>
@@ -92,13 +103,13 @@ class App extends Component {
 
         {error && <ErrorMessage />}
 
-        <ImageGallery images={images} onImageClick={this.handleImageItem} />
+        <ImageGallery images={images} onImageClick={this.handleGalleryItem} />
 
         {needToShowLoadMore && <Button onClick={this.fetchAllImages} />}
 
         {showModal && (
           <Modal onClose={this.toggleModal}>
-            <img src={fullImageUrl} alt="" />
+            <img src={largeImage} alt="" />
           </Modal>
         )}
       </>
