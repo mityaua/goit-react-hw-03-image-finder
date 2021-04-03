@@ -26,7 +26,7 @@ class App extends Component {
     }
   }
 
-  // Принимаем с формы запрос и пишем в стейт
+  // Принимаем с формы запрос и пишем в стейт + сбрасываем после отправки стейт
   onChangeQuery = query => {
     this.setState({
       images: [],
@@ -54,6 +54,7 @@ class App extends Component {
         currentPage: prevState.currentPage + 1,
       }));
     } catch (error) {
+      console.log(error);
       this.setState({ error });
     } finally {
       this.setState({
@@ -91,7 +92,7 @@ class App extends Component {
 
         {error && <ErrorMessage />}
 
-        <ImageGallery images={images} onClick={this.handleImageItem} />
+        <ImageGallery images={images} onImageClick={this.handleImageItem} />
 
         {needToShowLoadMore && <Button onClick={this.fetchAllImages} />}
 

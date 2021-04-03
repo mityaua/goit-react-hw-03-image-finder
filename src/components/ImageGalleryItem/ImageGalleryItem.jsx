@@ -1,7 +1,7 @@
 import styles from './ImageGalleryItem.module.scss';
 
-const ImageGalleryItem = ({ image, onClick }) => {
-  const fullImage = () => onClick(image.largeImageURL);
+const ImageGalleryItem = ({ image, onImageClick }) => {
+  const fullImage = () => onImageClick(image.largeImageURL);
 
   return (
     <li className={styles.ImageGalleryItem}>
