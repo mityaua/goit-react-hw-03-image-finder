@@ -22,8 +22,6 @@ const Modal = ({ children, onClose }) => {
     if (event.code === 'Escape') {
       onClose();
     }
-
-    console.log('Escape');
   };
 
   // Наблюдает за бекдропом и закрывает модалку
@@ -31,8 +29,6 @@ const Modal = ({ children, onClose }) => {
     if (event.currentTarget === event.target) {
       onClose();
     }
-
-    console.log('BackdropClick');
   };
 
   return createPortal(

@@ -82,6 +82,7 @@ class App extends Component {
   toggleModal = () => {
     this.setState(prevState => ({
       showModal: !prevState.showModal,
+      largeImage: '',
     }));
   };
 
