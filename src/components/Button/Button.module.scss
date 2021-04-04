@@ -1,6 +1,4 @@
-/*
-* Стили компонента Buton (Load more)
-*/
+// Стили компонента Buton (Load more)
 
 .Button-wrapper {
   display: flex;
@@ -35,9 +33,9 @@
   transition: opacity 250ms cubic-bezier(0.4, 0, 0.2, 1);
 
   cursor: pointer;
-}
 
-.Button:hover,
-.Button:focus {
-  opacity: 0.8;
+  &:hover,
+  &:focus {
+    opacity: 0.8;
+  }
 }

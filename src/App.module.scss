@@ -36,7 +36,16 @@ img {
   padding-bottom: 24px;
 }
 
-.foo {
+:global(.Close-box) {
+  display: flex;
+  justify-content: flex-end;
+
+  padding: 0 0 5px;
+}
+
+:global(.Modal-image) {
+  width: auto;
+  height: auto;
   max-height: 100vh;
-  max-width: 100vw;
+  // max-width: 100vw;
 }

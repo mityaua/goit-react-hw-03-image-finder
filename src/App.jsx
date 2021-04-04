@@ -5,6 +5,8 @@ import Button from './components/Button';
 import Loader from './components/Loader';
 import Message from './components/Message';
 import Modal from './components/Modal';
+import IconButton from './components/IconButton';
+import { ReactComponent as CloseIcon } from './assets/images/icons/close.svg';
 
 import fetchImages from './api/api-services';
 
@@ -89,13 +91,6 @@ class App extends Component {
       top: document.documentElement.scrollHeight,
       behavior: 'smooth',
     });
-
-    // const { scrollTop, clientHeight } = document.documentElement;
-
-    // window.scrollTo({
-    //   top: scrollTop + clientHeight,
-    //   behavior: 'smooth',
-    // });
   };
 
   render() {
@@ -119,14 +114,13 @@ class App extends Component {
 
         {showModal && (
           <Modal onClose={this.toggleModal}>
-            <button type="button" onClick={this.toggleModal}>
-              Close
-            </button>
-            <img
-              src={largeImage}
-              alt=""
-              style={{ maxHeight: '100vh', maxWidth: '100vw' }}
-            />
+            <div className="Close-box">
+              <IconButton onClick={this.toggleModal} aria-label="Close modal">
+                <CloseIcon width="20px" height="20px" fill="#7e7b7b" />
+              </IconButton>
+            </div>
+
+            <img src={largeImage} alt="" className="Modal-image" />
           </Modal>
         )}
 
