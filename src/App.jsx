@@ -28,15 +28,12 @@ class App extends Component {
     }
   }
 
-  // Принимаем с формы запрос и пишем в стейт + сбрасываем после отправки стейт
+  // Принимаем с формы запрос и пишем в стейт + сбрасываем после отправки ключи из стейта
   onChangeQuery = query => {
     this.setState({
       images: [],
       currentPage: 1,
       searchQuery: query,
-      isLoading: false,
-      showModal: false,
-      largeImage: '',
       error: null,
     });
   };
