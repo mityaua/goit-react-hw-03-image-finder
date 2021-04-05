@@ -3,19 +3,13 @@ import PropTypes from 'prop-types';
 import styles from './SearchForm.module.scss';
 
 const SearchFrom = ({ onSearch }) => {
-  const [state, setState] = useState({
-    query: '',
-  });
-
-  const { query } = state;
+  const [query, setQuery] = useState('');
 
   // Наблюдает за инпутом и пишет значние в стейт
   const handleSearchInput = e => {
-    const { name, value } = e.currentTarget;
+    const { value } = e.currentTarget;
 
-    setState({
-      [name]: value,
-    });
+    setQuery(value);
   };
 
   // Наблюдает за отправкой и отдает значение во внешний компонент
@@ -32,10 +26,7 @@ const SearchFrom = ({ onSearch }) => {
   };
 
   // Сбрасывает поле после отправки
-  const resetForm = () =>
-    setState({
-      query: '',
-    });
+  const resetForm = () => setQuery('');
 
   return (
     <form className={styles.SearchForm} onSubmit={handleSubmit}>

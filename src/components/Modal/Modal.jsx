@@ -7,11 +7,11 @@ import styles from './Modal.module.scss';
 const modalRoot = document.querySelector('#modal-root');
 
 const Modal = ({ children, onClose }) => {
-  // Вешает и удаляет слушатели
+  // Вешает слушатели (mount)
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
 
-    // returned function will be called on component unmount
+    // Убирает слушатети (unmount)
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };

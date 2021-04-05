@@ -1,4 +1,5 @@
-import React, { Component } from 'react';
+import { useState, useEffect, useRef } from 'react';
+
 import Searchbar from './components/Searchbar';
 import ImageGallery from './components/ImageGallery';
 import Button from './components/Button';
@@ -10,140 +11,128 @@ import { ReactComponent as CloseIcon } from './assets/images/icons/close.svg';
 
 import fetchImages from './api/api-services';
 
-class App extends Component {
-  state = {
-    images: [],
-    currentPage: 1,
-    searchQuery: '',
-    isLoading: false,
-    showModal: false,
-    largeImage: '',
-    error: null,
-  };
+const App = () => {
+  const [images, setImages] = useState([]);
+  const [currentPage, setPage] = useState(1);
+  const [searchQuery, setQuery] = useState('');
+  const [isLoading, setLoading] = useState(false);
+  const [showModal, setModal] = useState(false);
+  const [largeImage, setlargeImage] = useState('');
+  const [error, setError] = useState(null);
 
-  // Если при обновлении запрос не равен между стейтами, тогда делаем фетч
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.searchQuery !== this.state.searchQuery) {
-      this.getImages();
+  // Custom hook
+  const mounted = useRef();
+  useEffect(() => {
+    if (!mounted.current) {
+      // при монтировании
+      mounted.current = true;
+    } else {
+      // при обновлении
+      getImages();
     }
-  }
+    // eslint-disable-next-line
+  }, [searchQuery]);
 
-  // Принимаем с формы запрос и пишем в стейт + сбрасываем после отправки ключи из стейта
-  onChangeQuery = query => {
-    this.setState({
-      images: [],
-      currentPage: 1,
-      searchQuery: query,
-      error: null,
-    });
+  // Принимаем с формы запрос и пишем в стейт + сбрасываем после отправки стейт
+  const onChangeQuery = query => {
+    setImages([]);
+    setPage(1);
+    setQuery(query);
+    setLoading(false);
+    setModal(false);
+    setlargeImage('');
+    setError(null);
   };
 
   // Получаем дату из фетча
-  getImages = async () => {
-    const { currentPage, searchQuery } = this.state;
-
-    this.setState({
-      isLoading: true,
-    });
+  const getImages = async () => {
+    setLoading(true);
 
     try {
       const { hits } = await fetchImages(searchQuery, currentPage);
 
-      this.setState(prevState => ({
-        images: [...prevState.images, ...hits],
-        currentPage: prevState.currentPage + 1,
-      }));
+      setImages(prev => [...prev, ...hits]);
+
+      setPage(prevPage => prevPage + 1);
 
       if (currentPage !== 1) {
-        this.scrollOnLoadButton();
+        scrollOnLoadButton();
       }
     } catch (error) {
       console.log('Smth wrong with App fetch', error);
-      this.setState({ error });
+      setError({ error });
     } finally {
-      this.setState({
-        isLoading: false,
-      });
+      setLoading(false);
     }
   };
 
   // Получает полное изображение, пишет его в стейт и открывает модалку
-  handleGalleryItem = fullImageUrl => {
-    this.setState({
-      largeImage: fullImageUrl,
-      showModal: true,
-    });
+  const handleGalleryItem = fullImageUrl => {
+    setlargeImage(fullImageUrl);
+    setModal(true);
   };
 
   // Переключение модалки
-  toggleModal = () => {
-    this.setState(prevState => ({
-      showModal: !prevState.showModal,
-      largeImage: '',
-    }));
+  const toggleModal = () => {
+    setModal(prevModal => !prevModal);
   };
 
   // Скролл при клике на кнопку
-  scrollOnLoadButton = () => {
+  const scrollOnLoadButton = () => {
     window.scrollTo({
       top: document.documentElement.scrollHeight,
       behavior: 'smooth',
     });
   };
 
-  render() {
-    const { images, isLoading, showModal, largeImage, error } = this.state;
-    const needToShowLoadMore = images.length > 0 && images.length >= 12; // Нужны доп проверки;
+  const needToShowLoadMore = images.length > 0 && images.length >= 12; // Нужны доп проверки;
 
-    return (
-      <>
-        <Searchbar onSearch={this.onChangeQuery} />
+  return (
+    <>
+      <Searchbar onSearch={onChangeQuery} />
 
-        {images.length < 1 && (
-          <Message>
-            <h2>The gallery is empty 🙁</h2>
-            <p>Use search field!</p>
-          </Message>
-        )}
+      {images.length < 1 && (
+        <Message>
+          <h2>The gallery is empty 🙁</h2>
+          <p>Use search field!</p>
+        </Message>
+      )}
 
-        <ImageGallery images={images} onImageClick={this.handleGalleryItem} />
+      <ImageGallery images={images} onImageClick={handleGalleryItem} />
 
-        {needToShowLoadMore && <Button onClick={this.getImages} />}
+      {needToShowLoadMore && <Button onClick={getImages} />}
 
-        {showModal && (
-          <Modal onClose={this.toggleModal}>
-            <div className="Close-box">
-              <IconButton onClick={this.toggleModal} aria-label="Close modal">
-                <CloseIcon width="20px" height="20px" fill="#7e7b7b" />
-              </IconButton>
-            </div>
+      {showModal && (
+        <Modal onClose={toggleModal}>
+          <div className="Close-box">
+            <IconButton onClick={toggleModal} aria-label="Close modal">
+              <CloseIcon width="20px" height="20px" fill="#7e7b7b" />
+            </IconButton>
+          </div>
+          <img src={largeImage} alt="" className="Modal-image" />
+        </Modal>
+      )}
 
-            <img src={largeImage} alt="" className="Modal-image" />
-          </Modal>
-        )}
+      {isLoading && <Loader />}
 
-        {isLoading && <Loader />}
-
-        {error && (
-          <Message>
-            <h2>Oops! 😫</h2>
-            <p>
-              Sorry, something went wrong. Please try again, or{' '}
-              <a href="/">refresh the page</a>.
-            </p>
-          </Message>
-        )}
-      </>
-    );
-  }
-}
+      {error && (
+        <Message>
+          <h2>Oops! 😫</h2>
+          <p>
+            Sorry, something went wrong. Please try again, or{' '}
+            <a href="/">refresh the page</a>.
+          </p>
+        </Message>
+      )}
+    </>
+  );
+};
 
 export default App;
 
-// Попытка переделать на хуки
+// Рабочий вариант на классах
 
-// import { useState, useEffect, useRef } from 'react';
-
+// import React, { Component } from 'react';
 // import Searchbar from './components/Searchbar';
 // import ImageGallery from './components/ImageGallery';
 // import Button from './components/Button';
@@ -155,8 +144,8 @@ export default App;
 
 // import fetchImages from './api/api-services';
 
-// const App = () => {
-//   const [state, setState] = useState({
+// class App extends Component {
+//   state = {
 //     images: [],
 //     currentPage: 1,
 //     searchQuery: '',
@@ -164,126 +153,123 @@ export default App;
 //     showModal: false,
 //     largeImage: '',
 //     error: null,
-//   });
+//   };
 
-//   const mounted = useRef();
-//   useEffect(() => {
-//     if (!mounted.current) {
-//       // Делать что-то при монтировании
-//       mounted.current = true;
-//     } else {
-//       getImages();
+//   // Если при обновлении запрос не равен между стейтами, тогда делаем фетч
+//   componentDidUpdate(prevProps, prevState) {
+//     if (prevState.searchQuery !== this.state.searchQuery) {
+//       this.getImages();
 //     }
-//   }, [state.searchQuery]);
+//   }
 
-//   // Принимаем с формы запрос и пишем в стейт + сбрасываем после отправки стейт
-//   const onChangeQuery = query => {
-//     setState({
+//   // Принимаем с формы запрос и пишем в стейт + сбрасываем после отправки ключи из стейта
+//   onChangeQuery = query => {
+//     this.setState({
 //       images: [],
 //       currentPage: 1,
 //       searchQuery: query,
-//       isLoading: false,
-//       showModal: false,
-//       largeImage: '',
 //       error: null,
 //     });
 //   };
 
 //   // Получаем дату из фетча
-//   const getImages = async () => {
-//     const { currentPage, searchQuery } = state;
+//   getImages = async () => {
+//     const { currentPage, searchQuery } = this.state;
 
-//     setState({
+//     this.setState({
 //       isLoading: true,
 //     });
 
 //     try {
 //       const { hits } = await fetchImages(searchQuery, currentPage);
 
-//       setState(prevState => ({
+//       this.setState(prevState => ({
 //         images: [...prevState.images, ...hits],
 //         currentPage: prevState.currentPage + 1,
 //       }));
 
 //       if (currentPage !== 1) {
-//         scrollOnLoadButton();
+//         this.scrollOnLoadButton();
 //       }
 //     } catch (error) {
 //       console.log('Smth wrong with App fetch', error);
-//       setState({ error });
+//       this.setState({ error });
 //     } finally {
-//       setState({
+//       this.setState({
 //         isLoading: false,
 //       });
 //     }
 //   };
 
 //   // Получает полное изображение, пишет его в стейт и открывает модалку
-//   const handleGalleryItem = fullImageUrl => {
-//     setState({
+//   handleGalleryItem = fullImageUrl => {
+//     this.setState({
 //       largeImage: fullImageUrl,
 //       showModal: true,
 //     });
 //   };
 
 //   // Переключение модалки
-//   const toggleModal = () => {
-//     setState(prevState => ({
+//   toggleModal = () => {
+//     this.setState(prevState => ({
 //       showModal: !prevState.showModal,
+//       largeImage: '',
 //     }));
 //   };
 
 //   // Скролл при клике на кнопку
-//   const scrollOnLoadButton = () => {
+//   scrollOnLoadButton = () => {
 //     window.scrollTo({
 //       top: document.documentElement.scrollHeight,
 //       behavior: 'smooth',
 //     });
 //   };
 
-//   const { images, isLoading, showModal, largeImage, error } = state;
-//   const needToShowLoadMore = images.length > 0 && images.length >= 12; // Нужны доп проверки;
+//   render() {
+//     const { images, isLoading, showModal, largeImage, error } = this.state;
+//     const needToShowLoadMore = images.length > 0 && images.length >= 12; // Нужны доп проверки;
 
-//   return (
-//     <>
-//       <Searchbar onSearch={onChangeQuery} />
+//     return (
+//       <>
+//         <Searchbar onSearch={this.onChangeQuery} />
 
-//       {images.length < 1 && (
-//         <Message>
-//           <h2>The gallery is empty 🙁</h2>
-//           <p>Use search field!</p>
-//         </Message>
-//       )}
+//         {images.length < 1 && (
+//           <Message>
+//             <h2>The gallery is empty 🙁</h2>
+//             <p>Use search field!</p>
+//           </Message>
+//         )}
 
-//       <ImageGallery images={images} onImageClick={handleGalleryItem} />
+//         <ImageGallery images={images} onImageClick={this.handleGalleryItem} />
 
-//       {needToShowLoadMore && <Button onClick={getImages} />}
+//         {needToShowLoadMore && <Button onClick={this.getImages} />}
 
-//       {showModal && (
-//         <Modal onClose={toggleModal}>
-//           <div className="Close-box">
-//             <IconButton onClick={toggleModal} aria-label="Close modal">
-//               <CloseIcon width="20px" height="20px" fill="#7e7b7b" />
-//             </IconButton>
-//           </div>
+//         {showModal && (
+//           <Modal onClose={this.toggleModal}>
+//             <div className="Close-box">
+//               <IconButton onClick={this.toggleModal} aria-label="Close modal">
+//                 <CloseIcon width="20px" height="20px" fill="#7e7b7b" />
+//               </IconButton>
+//             </div>
 
-//           <img src={largeImage} alt="" className="Modal-image" />
-//         </Modal>
-//       )}
+//             <img src={largeImage} alt="" className="Modal-image" />
+//           </Modal>
+//         )}
 
-//       {isLoading && <Loader />}
+//         {isLoading && <Loader />}
 
-//       {error && (
-//         <Message>
-//           <h2>Oops! 😫</h2>
-//           <p>
-//             Sorry, something went wrong. Please try again, or{' '}
-//             <a href="/">refresh the page</a>.
-//           </p>
-//         </Message>
-//       )}
-//     </>
-//   );
-// };
+//         {error && (
+//           <Message>
+//             <h2>Oops! 😫</h2>
+//             <p>
+//               Sorry, something went wrong. Please try again, or{' '}
+//               <a href="/">refresh the page</a>.
+//             </p>
+//           </Message>
+//         )}
+//       </>
+//     );
+//   }
+// }
 
 // export default App;
