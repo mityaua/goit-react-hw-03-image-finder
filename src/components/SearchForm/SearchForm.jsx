@@ -17,7 +17,7 @@ const SearchFrom = ({ onSearch }) => {
     e.preventDefault();
 
     // Запрещает отправку пустого инпута
-    if (!query) return;
+    if (!query.trim()) return;
 
     // Отдать данные внешнему компоненту
     onSearch(query);

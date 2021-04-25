@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 
 import Searchbar from './components/Searchbar';
 import ImageGallery from './components/ImageGallery';
@@ -20,16 +20,11 @@ const App = () => {
   const [largeImage, setlargeImage] = useState('');
   const [error, setError] = useState(null);
 
-  // Custom hook
-  const mounted = useRef();
+  // Запрос за картинками при обновлении инпута
   useEffect(() => {
-    if (!mounted.current) {
-      // при монтировании
-      mounted.current = true;
-    } else {
-      // при обновлении
-      getImages();
-    }
+    if (!searchQuery) return;
+
+    getImages();
     // eslint-disable-next-line
   }, [searchQuery]);
 
